@@ -71,6 +71,20 @@ def run_one_image(img, model):
 
     plt.show()
 
+def retrieve_embedding(img, model):
+
+    x = torch.tensor(img)
+
+    #make it a batch-like
+    x = x.unsqueeze(dim=0)
+    x = torch.einsum('nhwc->nchw', x)
+
+    # run MAE
+    loss, y, mask, latent = model(x.float(), mask_ratio=0.75)
+    y = model.unpatchify(y)
+    y = torch.einsum('nchw->nhwc', y).detach().cpu()
+
+    return latent
 
 def main():
 
@@ -95,7 +109,12 @@ def main():
     plt.rcParams['figure.figsize'] = [5, 5]
     show_image(torch.tensor(img))
 
-    print('MAE with pixel reconstruction:')
-    run_one_image(img, model_mae)
+    # print('MAE with pixel reconstruction:')
+    # run_one_image(img, model_mae)
+
+    print("getting embedding")
+    embedding = retrieve_embedding(img, model_mae)
+
+    print(embedding)
 
 main()
