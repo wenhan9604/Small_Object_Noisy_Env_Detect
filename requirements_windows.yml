@@ -7,7 +7,8 @@
 
 # To install pytorch, run: pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
 
-#To install mae, run: !git clone https://github.com/facebookresearch/mae.git ./mae    
+# To download the ViT-encoder (Base) checkpoint, download the .pth file from here: https://github.com/facebookresearch/mae
+# And store in the directory: ./checkpoint
 
 name: DL_group_project
 channels:
