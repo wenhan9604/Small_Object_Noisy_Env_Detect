@@ -1,6 +1,5 @@
 import cv2, os
 import numpy as np
-from tqdm.auto import tqdm
 from joblib import Parallel, delayed
 
 def process(filename, in_path, out_path, subfolder):
@@ -14,33 +13,34 @@ def process(filename, in_path, out_path, subfolder):
     cv2.imwrite(os.path.join(out_path,subfolder,'images',filename),hazed_image)
 
     ###### process labels, do not remove. Labels need to be half-sized too.
-    label_filename=os.path.join(in_path,subfolder,"labelTxt",filename.replace(".png",".txt"))
-    new_annotation=[]
-    header=[]
-    try:
-        with open(label_filename,'r') as f:
-            # print(f"Processing: {filename}")
-            lines=[line.strip().split() for line in f.readlines()]
-            # print(lines[0])
-            header.append(lines[0][0])
-            header.append(lines[1][0])
-            
-            for i in range(2,len(lines)):
-                line=lines[i]
+    if subfolder != "test":
+        label_filename=os.path.join(in_path,subfolder,"labelTxt",filename.replace(".png",".txt"))
+        new_annotation=[]
+        header=[]
+        try:
+            with open(label_filename,'r') as f:
+                # print(f"Processing: {filename}")
+                lines=[line.strip().split() for line in f.readlines()]
+                # print(lines[0])
+                header.append(lines[0][0])
+                header.append(lines[1][0])
+                
+                for i in range(2,len(lines)):
+                    line=lines[i]
 
-                points=np.array([float(x) for x in line[:-2]])
-                points /= 2.0
-                points=points.astype(int)
-                points_list=list(points)
-                points_list=[str(x) for x in points_list]
-                points_list.append(line[-2])
-                points_list.append(line[-1])
+                    points=np.array([float(x) for x in line[:-2]])
+                    points /= 2.0
+                    points=points.astype(int)
+                    points_list=list(points)
+                    points_list=[str(x) for x in points_list]
+                    points_list.append(line[-2])
+                    points_list.append(line[-1])
 
-                new_annotation.append(f"{" ".join(points_list)}")
-        with open(os.path.join(out_path,subfolder,"labelTxt",filename.replace(".png",".txt")),"w") as f:            
-            f.write('\n'.join([*header,*new_annotation]))
-    except:
-        print(f"No label found for {filename}")
+                    new_annotation.append(f"{" ".join(points_list)}")
+            with open(os.path.join(out_path,subfolder,"labelTxt",filename.replace(".png",".txt")),"w") as f:            
+                f.write('\n'.join([*header,*new_annotation]))
+        except:
+            print(f"No label found for {filename}")
 
 def generate(in_path, out_path,subfolder):
     os.makedirs(os.path.join(out_path,subfolder,"images"),exist_ok=True)
@@ -113,6 +113,8 @@ def generate_train_and_val(in_path,out_path):
     generate(in_path,out_path,"train")
     print("Processing validation set")
     generate(in_path,out_path,"val")
+    print("Processing test set")
+    generate(in_path,out_path,"test")
 
 if __name__ == "__main__":
     generate_train_and_val(

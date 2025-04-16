@@ -15,6 +15,8 @@ raw_data/
 │   ├── val
 │   │  ├── images/
 │   │  └── labelTxt/
+│   └── test
+│      └── images/
 dotah_generator/
-├── <generator file>
+└── <generator file>
 ```
