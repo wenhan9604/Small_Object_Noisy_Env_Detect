@@ -3,8 +3,8 @@ import torch.nn as nn
 from torch.utils.checkpoint import checkpoint ,checkpoint_sequential
 
 class RCAN(nn.Module):
-    def __init__(self, num_of_image_channels=3, num_of_RG=10, num_of_RCAB=20, num_of_features=64, upscale_factor=2):
-    # def __init__(self, num_of_image_channels=3, num_of_RG=3, num_of_RCAB=3, num_of_features=64, upscale_factor=2):
+    # def __init__(self, num_of_image_channels=3, num_of_RG=10, num_of_RCAB=20, num_of_features=64, upscale_factor=2):
+    def __init__(self, num_of_image_channels=3, num_of_RG=5, num_of_RCAB=10, num_of_features=32, upscale_factor=2):
         super().__init__()
 
         #shallow feature extraction (conv layer)

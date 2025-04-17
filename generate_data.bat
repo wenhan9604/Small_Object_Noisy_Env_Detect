@@ -1,0 +1,1 @@
+cls && cd generate_dotah && python dotah_v2.py
