@@ -2,9 +2,10 @@
 import torch
 import torch.nn as nn
 from models.ffa_net import FFANet
+from models.RCAN import RCAN
 from models.image_coordination_block import ImageCoordinationBlock
+from models.upsample import upsample
 from models.faster_rcnn import get_custom_faster_rcnn
-# TODO: import upsampling
 # TODO: import autoencoder 
 # TODO: import models
 
@@ -28,7 +29,13 @@ class KJRDNet(nn.Module):
             kernel_size=kernel_size,
             padding=padding
             )
-        self.rcan = rcan()  # TODO: check if its called correctly
+        self.rcan = RCAN(
+            num_of_image_channels=3,
+            num_of_RG=5,
+            num_of_RCAB=10,
+            num_of_features=32,
+            upscale_factor=2
+            )
         self.image_coordination_block = ImageCoordinationBlock(
             autoencoder=self.autoencoder,
             rcan=self.rcan,
@@ -44,7 +51,7 @@ class KJRDNet(nn.Module):
         # Image restoration
         upsample = self.upsample(x)
         output = self.image_coordination_block(x)
-        output += upsample  # TODO: check if shapes match
+        output += upsample 
         
         # Image detection
         detection_output = self.custom_faster_rcnn(output)
