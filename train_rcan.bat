@@ -1,1 +1,1 @@
-cls && python train.py --config_file configs/config_rcan.yaml
+cls && python train.py --config_file configs/config_rcan.yaml --output_dir ./output_models/
