@@ -1,8 +1,10 @@
 import torch
 import torch.nn as nn
+from torch.utils.checkpoint import checkpoint ,checkpoint_sequential
 
 class RCAN(nn.Module):
-    def __init__(self, num_of_image_channels=3, num_of_RG=10, num_of_RCAB=20, num_of_features=64, upscale_factor=2):
+    # def __init__(self, num_of_image_channels=3, num_of_RG=10, num_of_RCAB=20, num_of_features=64, upscale_factor=2):
+    def __init__(self, num_of_image_channels=3, num_of_RG=5, num_of_RCAB=10, num_of_features=32, upscale_factor=2):
         super().__init__()
 
         #shallow feature extraction (conv layer)
@@ -23,10 +25,15 @@ class RCAN(nn.Module):
         self.reconstruct=nn.Conv2d(in_channels=num_of_features,out_channels=num_of_image_channels,kernel_size=3,padding=1)
 
     def forward(self, x):
-        x=self.shallow_feature(x)
-        x=self.RIR(x)
-        x=self.upscale(x)
-        x=self.reconstruct(x)
+        x=checkpoint(self.shallow_feature,x,use_reentrant=False)
+        x=checkpoint(self.RIR,x,use_reentrant=False)
+        x=checkpoint_sequential(self.upscale,segments=2,input=x,use_reentrant=False)
+        x=checkpoint(self.reconstruct,x,use_reentrant=False)
+
+        # x=self.shallow_feature(x)
+        # x=self.RIR(x)
+        # x=self.upscale(x)
+        # x=self.reconstruct(x)
         return x
 
 class RIR(nn.Module):

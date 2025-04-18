@@ -1,0 +1,15 @@
+data:
+  dataset: 'dotah_rcan' # TODO: insert dataset name here
+
+train:
+  batch_size: 16
+  lr: 0.0001
+  n_epochs: 10
+  num_workers: 4 # change this based on number of cores on your CPU. 4 is sufficient for 1 gpu. If unsure leave at 1.
+
+network:
+  model: 'rcan'
+
+optimizer:
+  type: "sgd" # adamw or sgd
+  weight_decay: 0.0 #0.001
