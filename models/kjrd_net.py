@@ -18,10 +18,12 @@ class KJRDNet(nn.Module):
             in_channels=64,
             out_channels=64,
             kernel_size=3,
-            padding=1
+            padding=1,
+            ffa_weights=None,
+            RCAN_weights=None
             ):
         super().__init__()
-        self.upsample = upsample  # TODO: check if its called correctly
+        self.upsample = upsample
         self.autoencoder = autoencoder()  # TODO: check if its called correctly
         self.ffanet = FFANet(
             in_channels=in_channels,
@@ -46,6 +48,16 @@ class KJRDNet(nn.Module):
             padding=padding
         )
         self.custom_faster_rcnn = get_custom_faster_rcnn(num_classes, icb_channels=out_channels)
+
+        #load pretrained and freeze the weights
+        if ffa_weights:
+            self.ffanet.load_state_dict(torch.load(ffa_weights))
+            for param in self.ffanet.parameters():
+                param.requires_grad=False
+        if RCAN_weights:
+            self.rcan.load_state_dict(torch.load(RCAN_weights))
+            for param in self.rcan.parameters():
+                param.requires_grad=False
 
     def forward(self, x):
         # Image restoration
