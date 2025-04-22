@@ -1,6 +1,7 @@
 import cv2, os
 import numpy as np
 from joblib import Parallel, delayed
+import matplotlib.pyplot as plt
 
 def process(filename, in_path, out_path, subfolder):
     img_path=os.path.join(in_path,subfolder,"images",filename)
@@ -36,7 +37,7 @@ def process(filename, in_path, out_path, subfolder):
                     points_list.append(line[-2])
                     points_list.append(line[-1])
 
-                    new_annotation.append(f"{" ".join(points_list)}")
+                    # new_annotation.append(f"{" ".join(points_list)}")
             with open(os.path.join(out_path,subfolder,"labelTxt",filename.replace(".png",".txt")),"w") as f:            
                 f.write('\n'.join([*header,*new_annotation]))
         except:
@@ -108,6 +109,61 @@ def apply_haze(image, A_range=(0.9, 1.0), t_range=(0.5, 0.7), direction='top'):
 
     return hazed_image
 
+def generate_haze_map_gaussian(kernel_size, numb_patches, sigma, image_shape):
+    '''
+    Plan:
+    - Create a haze map that has patches of varying intensity. Each patch's intensity is defined by gaussian distribution 
+    - Will stride across the map, and apply a bit-wise operation of gaussian mask onto the patch 
+    - Lastly, add the patch back to the haze map 
+    '''
+
+    map_height = image_shape[1]
+    map_width = image_shape[0]
+
+    stride_height = np.ceil(map_height / numb_patches).astype(np.int32)
+    stride_width = np.ceil(map_width / numb_patches).astype(np.int32)
+
+    # Create a standard gaussian kernel
+    gaussian_1D = cv2.getGaussianKernel(kernel_size, sigma)
+
+    gaussian_2D = gaussian_1D * gaussian_1D.T
+
+    print("\n2D Gaussian kernel:")
+    print(f"Shape: {gaussian_2D.shape}")
+    print(gaussian_2D)
+    
+
+    haze_map = np.ones(image_shape, dtype=np.float64)
+
+    # print("\n haze_map:")
+    # print(f"Shape: {haze_map.shape}")
+    # print(haze_map)
+
+    for y in range(0, map_height, stride_height):
+        for x in range(0, map_width, stride_width):
+            
+            #Get patch 
+            patch = haze_map[y:y+kernel_size, x:x+kernel_size]
+
+            # print("\n Patch:")
+            # print(f"Shape: {patch.shape}")
+            # print(patch)
+
+            #Get randomized gaussian kernel 
+            # gaussian_1D = cv2.getGaussianKernel(kernel_size, sigma)
+
+            # gaussian_2D = gaussian_1D * gaussian_1D.T
+
+            # print("\n2D Gaussian kernel:")
+            # print(gaussian_2D)
+
+            patch *= gaussian_2D
+
+            haze_map[y:y+kernel_size, x:x+kernel_size] = patch
+
+    return haze_map
+
+
 def generate_train_and_val(in_path,out_path):
     print("Procesing train set")
     generate(in_path,out_path,"train")
@@ -117,7 +173,13 @@ def generate_train_and_val(in_path,out_path):
     generate(in_path,out_path,"test")
 
 if __name__ == "__main__":
-    generate_train_and_val(
-        in_path='../raw_data/dota_orig',
-        out_path='../raw_data/dota_hazed'
-    )
+    # generate_train_and_val(
+    #     in_path='../raw_data/dota_orig',
+    #     out_path='../raw_data/dota_hazed'
+    # )
+
+    haze_map = generate_haze_map_gaussian(5, 1, 0.9, (256, 256))
+    plt.imshow(haze_map, cmap='gray')
+    plt.waitforbuttonpress()
+    plt.close('all')
+
