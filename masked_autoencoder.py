@@ -89,8 +89,8 @@ def retrieve_embedding(img, model):
 def main():
 
     #Load model
-    chkpt_dir = './checkpoint/mae_pretrain_vit_base.pth'
-    model_mae = prepare_model(chkpt_dir, 'mae_vit_base_patch16')
+    chkpt_dir = './checkpoint/mae_pretrain_vit_large.pth'
+    model_mae = prepare_model(chkpt_dir, 'mae_vit_large_patch16')
     print('Model loaded.')
 
     # load an image
@@ -109,8 +109,8 @@ def main():
     plt.rcParams['figure.figsize'] = [5, 5]
     show_image(torch.tensor(img))
 
-    # print('MAE with pixel reconstruction:')
-    # run_one_image(img, model_mae)
+    print('MAE with pixel reconstruction:')
+    run_one_image(img, model_mae)
 
     print("getting embedding")
     embedding = retrieve_embedding(img, model_mae)
