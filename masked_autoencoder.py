@@ -109,12 +109,13 @@ def main():
     plt.rcParams['figure.figsize'] = [5, 5]
     show_image(torch.tensor(img))
 
-    print('MAE with pixel reconstruction:')
-    run_one_image(img, model_mae)
+    # print('MAE with pixel reconstruction:')
+    # run_one_image(img, model_mae)
 
-    print("getting embedding")
+    print("Retrieve embedding")
     embedding = retrieve_embedding(img, model_mae)
 
+    print(f"Embedding Shape: {embedding.shape}")
     print(embedding)
 
 main()
