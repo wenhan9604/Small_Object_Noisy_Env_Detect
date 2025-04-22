@@ -1,0 +1,20 @@
+data:
+  dataset: 'dotah_ffa_net'
+
+train:
+  batch_size: 32
+  lr: 0.006
+  n_epochs: 10
+  hidden_dim: 32
+  kernel_size: 3
+  num_groups: 4
+  num_attention_blocks: 2
+  remove_global_skip_connection: False
+  num_workers: 1 # change this based on number of cores on your CPU. 4 is sufficient for 1 gpu. If unsure leave at 1.
+
+network:
+  model: 'ffa_net'
+
+optimizer:
+  type: "adamw" # adamw or sgd
+  weight_decay: 0.0 #0.001

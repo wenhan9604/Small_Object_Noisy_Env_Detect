@@ -6,17 +6,6 @@ We propose to replicate and reconstruct the KJRD-Net using the PyTorch framework
 Pytorch is required for this project.
 Pls install pytroch in local environment following [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/).
 
-## Dataset
-DOTA-H can be downloaded from [https://captain-whu.github.io/DOTA/dataset.html](https://captain-whu.github.io/DOTA/dataset.html)
-Downloasd Dota V1.5, use both Training set and Validation. You will need both the images and labels.
-The Data must be lodaded as belows
-```
-Dataset/
-├── dota_orig/
-│   ├── images/
-│   └── labelTxt/
-```
-
 ## ViT Encoder
 Setup
 - Download masked_autoencoder from https://dl.fbaipublicfiles.com/mae/pretrain/mae_pretrain_vit_large.pth

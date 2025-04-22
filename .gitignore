@@ -1,3 +1,5 @@
 *.txt
-
 Dataset/
+raw_data/
+*.pyc
+__pycache__/
