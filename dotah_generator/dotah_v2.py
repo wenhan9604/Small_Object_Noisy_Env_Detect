@@ -126,7 +126,8 @@ def generate_haze_map_gaussian(kernel_size, numb_patches, sigma, image_shape):
     # Create a standard gaussian kernel
     gaussian_1D = cv2.getGaussianKernel(kernel_size, sigma)
 
-    gaussian_2D = gaussian_1D * gaussian_1D.T
+
+    gaussian_2D = gaussian_1D * gaussian_1D.T * 100
 
     print("\n2D Gaussian kernel:")
     print(f"Shape: {gaussian_2D.shape}")
@@ -163,6 +164,17 @@ def generate_haze_map_gaussian(kernel_size, numb_patches, sigma, image_shape):
 
     return haze_map
 
+def apply_haze_gaussian(image, A_range=(0.9, 1.0), t_range=(0.5, 0.7), direction='top'):
+
+    height, width, _ = image.shape
+
+    # --- Transmission Map with gradient + noise ---
+    haze_map = apply_haze_gaussian(25, 5, 0.3, image.shape)
+    tx=np.random.uniform(low=t_range[0],high=t_range[1])
+
+    # --- Blend image and haze ---
+    hazed_image = image.astype(np.float32) * haze_map + A * (1 - haze_map)
+    hazed_image=cv2.addWeighted(src1=image.astype(float),alpha=tx,src2=A,beta=1-tx,gamma=0)
 
 def generate_train_and_val(in_path,out_path):
     print("Procesing train set")
@@ -178,7 +190,7 @@ if __name__ == "__main__":
     #     out_path='../raw_data/dota_hazed'
     # )
 
-    haze_map = generate_haze_map_gaussian(5, 1, 0.9, (256, 256))
+    haze_map = generate_haze_map_gaussian(25, 5, 7.2, (256, 256))
     plt.imshow(haze_map, cmap='gray')
     plt.waitforbuttonpress()
     plt.close('all')
