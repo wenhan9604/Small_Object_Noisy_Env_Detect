@@ -15,8 +15,8 @@ class KJRDNet(nn.Module):
             self,
             num_classes,
             upsample,
-            in_channels=64,
-            out_channels=64,
+            in_channels=32,
+            out_channels=32,
             kernel_size=3,
             padding=1,
             ffa_weights=None,
@@ -39,13 +39,13 @@ class KJRDNet(nn.Module):
             upscale_factor=2
             )
         self.image_coordination_block = ImageCoordinationBlock(
-            autoencoder=self.autoencoder,
-            rcan=self.rcan,
-            ffanet=self.ffanet,
-            in_channels=in_channels,
-            out_channels=out_channels,
-            kernel_size=kernel_size,
-            padding=padding
+            vit_token_count=5,
+            vit_dim=1024,
+            spatial_size=512,
+            in_channels=32,
+            out_channels=32,
+            kernel_size=3,
+            padding=1
         )
         self.custom_faster_rcnn = get_custom_faster_rcnn(num_classes, icb_channels=out_channels)
 
@@ -62,7 +62,14 @@ class KJRDNet(nn.Module):
     def forward(self, x):
         # Image restoration
         upsample = self.upsample(x)
-        output = self.image_coordination_block(x)
+        x_rcan = self.rcan(x)
+        x_ffa = self.ffanet(x)
+        x_vit = self.autoencoder(x)
+        output = self.image_coordination_block(
+            x_rcan, 
+            x_ffa, 
+            x_vit
+            )
         output += upsample 
         
         # Image detection
