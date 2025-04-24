@@ -4,6 +4,7 @@ from torch.utils.data import DataLoader
 from utils.data_utils import get_device, set_seed
 from datasets.dotah_ffa_net_dataset import DotahFfanetDataset
 from datasets.dotah_rcan_dataset import DotahRCANDataset
+from datasets.kjrd_dataset import KJRDDataset
 
 class Trainer:
     def __init__(self, config, output_dir=None, device=None):
@@ -46,6 +47,7 @@ class Trainer:
             self.trainset = make_split('train')
             self.validationset = make_split('val')
             self.testset = make_split('test')
+            self.collate_fn=None
         elif self.dataset.lower() == 'dotah_rcan':
             base_dimension=256
             transform_hazy = transforms.Compose([
@@ -67,23 +69,51 @@ class Trainer:
             self.trainset = make_split('train')
             self.validationset = make_split('val')
             self.testset = make_split('test')
+            self.collate_fn=None
+        elif self.dataset.lower() == 'kjrd':
+            base_dimension=256
+            transform_hazy = None
+            transform_clear = transforms.Compose([
+                transforms.Resize((base_dimension*2,base_dimension*2)),
+                transforms.ToTensor()
+            ])
+
+            def make_split(split):
+                hazy_path = f'./raw_data/dota_hazed/{split}/images'
+                clear_path = f'./raw_data/dota_orig/{split}/images'
+                labels_path = f'./raw_data/dota_orig/{split}/labelsTxt'
+                if not (os.path.isdir(hazy_path) and os.path.isdir(clear_path)):
+                    raise FileNotFoundError(f"Missing hazy or clear directory for: {split}")
+                return KJRDDataset(hazy_dir=hazy_path,clear_dir=clear_path,labels_dir=labels_path,transform_clear=transform_clear)
+
+            self.trainset = make_split('train')
+            self.validationset = make_split('val')
+            self.testset = make_split('test')
+            def collate_fn(self,batch):
+                images=[item[0] for item in batch]
+                targets=[item[1] for item in batch]
+                return images, targets
+            
         else:
             raise NotImplementedError("Dataset is not supported")
         self.train_loader = DataLoader(self.trainset, 
                                        batch_size=self.batch_size, 
-                                       shuffle=True, 
+                                       shuffle=True,
+                                       collate_fn=self.collate_fn,
                                        num_workers=self.num_workers,)
                                     #    num_workers=self.num_workers,pin_memory=True, persistent_workers=True) #for lower memory usage
         
         self.val_loader = DataLoader(self.validationset, 
                                        batch_size=self.batch_size, 
                                        shuffle=True, 
+                                       collate_fn=self.collate_fn,
                                        num_workers=self.num_workers,)
                                     #    num_workers=self.num_workers,pin_memory=True, persistent_workers=True) #for lower memory usage
 
         self.test_loader = DataLoader(self.testset, 
                                       batch_size=self.batch_size, 
-                                      shuffle=False, 
+                                      shuffle=False,
+                                      collate_fn=self.collate_fn,
                                       num_workers=self.num_workers,)
                                     #   num_workers=self.num_workers,pin_memory=True, persistent_workers=True) #for lower memory usage
 
