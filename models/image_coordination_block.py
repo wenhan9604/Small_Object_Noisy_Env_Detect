@@ -10,7 +10,8 @@ class ImageCoordinationBlock(nn.Module):
             vit_dim=1024,
             spatial_size=512,
             in_channels=32,
-            out_channels=32,
+            hidden_dim=32,
+            out_channels=3,
             kernel_size=3,
             padding=1
             ):
@@ -35,18 +36,18 @@ class ImageCoordinationBlock(nn.Module):
         )
         self.groups = nn.ModuleList([
             nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, padding=padding),
+                nn.Conv2d(in_channels, hidden_dim, kernel_size=kernel_size, padding=padding),
                 nn.ReLU(inplace=True),
-                nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, padding=padding)
+                nn.Conv2d(hidden_dim, hidden_dim, kernel_size=kernel_size, padding=padding)
             )
             for _ in range(3)
         ])
         self.final_layers = nn.Sequential(
-            nn.Conv2d(in_channels * 3, out_channels, kernel_size=kernel_size, padding=padding),
+            nn.Conv2d(hidden_dim * 3, hidden_dim, kernel_size=kernel_size, padding=padding),
             nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, padding=padding)
+            nn.Conv2d(hidden_dim, hidden_dim, kernel_size=kernel_size, padding=padding)
         )
-        self.attention = ChannelAttention(in_channels=out_channels)
+        self.attention = ChannelAttention(in_channels=hidden_dim, out_channels=out_channels)
     
     def forward(self, x_rcan, x_ffa, x_vit):
         B = x_rcan.shape[0]
@@ -75,13 +76,13 @@ class ImageCoordinationBlock(nn.Module):
 
 
 class ChannelAttention(nn.Module):
-    def __init__(self, in_channels=32, reduction=16):
+    def __init__(self, in_channels=32, out_channels=3, reduction=16):
         super().__init__()
         self.fc = nn.Sequential(
             nn.AdaptiveAvgPool2d(1),
             nn.Conv2d(in_channels, in_channels // reduction, kernel_size=1),
             nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels // reduction, in_channels, kernel_size=1),
+            nn.Conv2d(in_channels // reduction, out_channels, kernel_size=1),
             nn.Sigmoid()
         )
 
