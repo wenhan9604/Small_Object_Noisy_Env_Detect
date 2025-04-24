@@ -4,6 +4,12 @@
 # Then install tensorflow with commands below. [https://www.tensorflow.org/install/pip]
 # conda install -c conda-forge cudatoolkit=11.2 cudnn=8.1.0
 # pip install "tensorflow<2.11" 
+
+# To install pytorch, run: pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+# To download the ViT-encoder (Base) checkpoint, download the .pth file from here: https://github.com/facebookresearch/mae
+# And store in the directory: ./checkpoint
+
 name: DL_group_project
 channels:
   - defaults
@@ -24,3 +30,5 @@ dependencies:
     - transformers 
     - accelerate
     - evaluate
+    - matplotlib
+    - pillow
