@@ -43,7 +43,8 @@ class KJRDNet(nn.Module):
             vit_dim=1024,
             spatial_size=512,
             in_channels=32,
-            out_channels=32,
+            hidden_dim=32,
+            out_channels=3,
             kernel_size=3,
             padding=1
         )
