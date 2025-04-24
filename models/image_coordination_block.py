@@ -6,7 +6,7 @@ import torch.nn.functional as F
 class ImageCoordinationBlock(nn.Module):
     def __init__(
             self,
-            vit_token_count=5,
+            vit_token_count=50,
             vit_dim=1024,
             spatial_size=512,
             in_channels=32,

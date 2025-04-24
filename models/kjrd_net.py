@@ -39,7 +39,7 @@ class KJRDNet(nn.Module):
             upscale_factor=2
             )
         self.image_coordination_block = ImageCoordinationBlock(
-            vit_token_count=5,
+            vit_token_count=50,
             vit_dim=1024,
             spatial_size=512,
             in_channels=32,
