@@ -1,22 +1,38 @@
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 
 class ImageCoordinationBlock(nn.Module):
     def __init__(
             self,
-            autoencoder,
-            rcan,
-            ffanet,
-            in_channels=64,
-            out_channels=64,
+            vit_token_count=5,
+            vit_dim=1024,
+            spatial_size=512,
+            in_channels=32,
+            out_channels=32,
             kernel_size=3,
             padding=1
             ):
         super().__init__()
-        self.autoencoder = autoencoder
-        self.rcan = rcan
-        self.ffanet = ffanet
+
+        self.spatial_size = spatial_size
+        self.rcan_proj = nn.Sequential(
+            nn.Conv2d(3, in_channels, kernel_size=1),
+            nn.ReLU(inplace=True)
+        )
+        self.ffa_proj = nn.Sequential(
+            nn.Conv2d(3, in_channels, kernel_size=1),
+            nn.ReLU(inplace=True)
+        )
+        self.vit_proj = nn.Sequential(
+            nn.Linear(vit_dim, spatial_size * spatial_size),
+            nn.ReLU(inplace=True)
+        )
+        self.vit_conv = nn.Sequential(
+            nn.Conv2d(vit_token_count, in_channels, kernel_size=3, padding=1),
+            nn.ReLU(inplace=True)
+        )
         self.groups = nn.ModuleList([
             nn.Sequential(
                 nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, padding=padding),
@@ -32,26 +48,34 @@ class ImageCoordinationBlock(nn.Module):
         )
         self.attention = ChannelAttention(in_channels=out_channels)
     
-    def forward(self, x):
-        auto_encoder_output = self.autoencoder(x)
-        ffanet_output = self.ffanet(x)
-        rcan_output = self.rcan(x)
+    def forward(self, x_rcan, x_ffa, x_vit):
+        B = x_rcan.shape[0]
 
+        # Upsample to match RCAN
+        x_ffa = F.interpolate(x_ffa, size=x_rcan.shape[2:], mode='bilinear', align_corners=False)
+        x_ffa = self.ffa_proj(x_ffa)
+
+        x_vit = self.vit_proj(x_vit)
+        x_vit = x_vit.view(B, -1, self.spatial_size, self.spatial_size)
+        x_vit = self.vit_conv(x_vit) 
+        
+        x_rcan = self.rcan_proj(x_rcan)
+        
         # Each model passes through separate layers
-        auto_encoder_output = self.groups[0](auto_encoder_output)
-        ffanet_output = self.groups[1](ffanet_output)
-        rcan_output = self.groups[2](rcan_output)
+        x_vit = self.groups[0](x_vit)
+        x_ffa = self.groups[1](x_ffa)
+        x_rcan = self.groups[2](x_rcan)
 
         # Concatenate the outputs from all three models
-        x = torch.cat((auto_encoder_output, ffanet_output, rcan_output), dim=1)
-        output = self.final_layers(x)
+        x_fused = torch.cat([x_vit, x_ffa, x_rcan], dim=1)
+        output = self.final_layers(x_fused)
         output = self.attention(output)
 
         return output
 
 
 class ChannelAttention(nn.Module):
-    def __init__(self, in_channels=64, reduction=16):
+    def __init__(self, in_channels=32, reduction=16):
         super().__init__()
         self.fc = nn.Sequential(
             nn.AdaptiveAvgPool2d(1),
