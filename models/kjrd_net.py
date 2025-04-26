@@ -6,7 +6,7 @@ from models.RCAN import RCAN
 from models.image_coordination_block import ImageCoordinationBlock
 from models.upsample import upsample
 from models.faster_rcnn import get_custom_faster_rcnn
-# TODO: import autoencoder 
+from models.masked_autoencoder import MaskedAutoEncoder
 # TODO: import models
 
 
@@ -24,7 +24,11 @@ class KJRDNet(nn.Module):
             ):
         super().__init__()
         self.upsample = upsample
-        self.autoencoder = autoencoder()  # TODO: check if its called correctly
+        self.autoencoder = MaskedAutoEncoder(
+            chkpt_dir = './checkpoint/mae_pretrain_vit_large.pth',
+            model_arch = 'mae_vit_large_patch16',
+        )  # TODO: check if its called correctly
+        
         self.ffanet = FFANet(
             in_channels=in_channels,
             out_channels=out_channels,
