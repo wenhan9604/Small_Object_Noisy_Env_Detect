@@ -6,7 +6,7 @@ def process(filename, in_path, out_path, subfolder):
     img_path=os.path.join(in_path,subfolder,"images",filename)
     image = cv2.imread(img_path)
     height, width, _ = image.shape
-    image = cv2.resize(image,(width // 2,height // 2), interpolation=cv2.INTER_LINEAR)
+    image = cv2.resize(image,(256,256), interpolation=cv2.INTER_LINEAR)
     direction = np.random.choice(['top', 'bottom', 'none'])
     hazed_image = apply_haze(image=image, direction=direction)
 
