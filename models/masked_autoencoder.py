@@ -100,27 +100,32 @@ def image_encoding(img, model):
 
     return latent
 
-def retrieve_encoding(img):
-
-    #Load model
+def mae_setup_encoder(chkpt_dir = './checkpoint/mae_pretrain_vit_large.pth', model_name = 'mae_vit_large_patch16'):
+    '''
+    Load encoder using the model's path and name
+    '''
     chkpt_dir = './checkpoint/mae_pretrain_vit_large.pth'
-    model_mae = prepare_model(chkpt_dir, 'mae_vit_large_patch16')
-    print('Model loaded.')
+    model_name = 'mae_vit_large_patch16'
+    model_mae = prepare_model(chkpt_dir, model_name)
+    print('Masked_Autoencoder loaded')
 
-    processed_img = ViT_image_preprocessing(img=img)
+    return model_mae
+
+def mae_encode_image(img, model):
+
+    processed_img = ViT_image_preprocessing(img)
 
     #Debug preprocessed img
     # plt.rcParams['figure.figsize'] = [5, 5]
     # show_image(torch.tensor(processed_img))
 
-    embedding = image_encoding(img, model_mae)
+    embedding = image_encoding(processed_img, model)
 
     #Debug embedding
     # print(f"Embedding Shape: {embedding.shape}")
     # print(embedding)
 
     return embedding
-
 
 def test():
 
