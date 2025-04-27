@@ -2,6 +2,7 @@
 import torch
 import torch.nn as nn
 from models.ffa_net import FFANet
+from models.diffusion_net import DDPMNet, Diffusion
 from models.RCAN import RCAN
 from models.image_coordination_block import ImageCoordinationBlock
 from models.upsample import upsample
@@ -20,9 +21,12 @@ class KJRDNet(nn.Module):
             kernel_size=3,
             padding=1,
             ffa_weights=None,
-            RCAN_weights=None
+            RCAN_weights=None,
+            diffusion_weights=None,
+            use_diffusion=False
             ):
         super().__init__()
+        self.use_diffusion = use_diffusion
         self.upsample = upsample
         self.autoencoder = MaskedAutoEncoder(
             chkpt_dir = './checkpoint/mae_pretrain_vit_large.pth',
@@ -30,7 +34,7 @@ class KJRDNet(nn.Module):
         )  # TODO: check if its called correctly
         
         self.ffanet = FFANet(
-            in_channels=in_channels,
+            in_channels=3,
             out_channels=out_channels,
             kernel_size=kernel_size,
             padding=padding
@@ -53,6 +57,13 @@ class KJRDNet(nn.Module):
             padding=1
         )
         self.custom_faster_rcnn = get_custom_faster_rcnn(num_classes, icb_channels=out_channels)
+        if use_diffusion:
+            self.diffusion = DDPMNet(
+                hidden_dim=32,
+                time_emb_dim=32,
+                kernel_size=kernel_size
+                )
+            self.diffusion = Diffusion(timesteps=200)
 
         #load pretrained and freeze the weights
         if ffa_weights:
@@ -63,12 +74,19 @@ class KJRDNet(nn.Module):
             self.rcan.load_state_dict(torch.load(RCAN_weights))
             for param in self.rcan.parameters():
                 param.requires_grad=False
+        if use_diffusion and diffusion_weights:
+            self.diffusion.load_state_dict(torch.load(diffusion_weights))
+            for param in self.diffusion.parameters():
+                param.requires_grad=False
 
     def forward(self, x):
         # Image restoration
         upsample = self.upsample(x)
         x_rcan = self.rcan(x)
-        x_ffa = self.ffanet(x)
+        if self.use_diffusion:
+            x_ffa = self.diffusion.sample(self.diffusion, x_hazy=x, device=self.device)
+        else:
+            x_ffa = self.ffanet(x)
         x_vit = self.autoencoder(x)
         output = self.image_coordination_block(
             x_rcan, 

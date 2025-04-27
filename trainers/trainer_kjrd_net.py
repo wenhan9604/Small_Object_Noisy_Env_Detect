@@ -7,7 +7,7 @@ from trainers.trainer_base import Trainer
 class KJRDNetTrainer(Trainer):
     def __init__(self, config, output_dir=None, device=None):
         super().__init__(config, output_dir=output_dir, device=device)
-        
+        self.use_diffusion = config.train.use_diffusion
         self.main_block=self.init_main_block()
         self.detector=self.init_detector()
         
@@ -23,9 +23,11 @@ class KJRDNetTrainer(Trainer):
 
     def init_main_block(self):
         model = KJRDNet_wo_detection(
-            ffa_weights=None,
+            ffa_weights='./output_models/ffa_net_dotah_ffa_net.pth',
             RCAN_weights='./output_models/rcan_dotah_rcan_1.pth',
-            VIT_weights=None
+            VIT_weights=None,
+            diffusion_weights='./output_models/diffusion_net_dotah_ffa_net.pth',
+            use_diffusion=self.use_diffusion
         ).to(self.device)
         return model
     

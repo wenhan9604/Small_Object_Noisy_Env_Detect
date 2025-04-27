@@ -18,7 +18,9 @@ class KJRDNet_wo_detection(nn.Module):
             padding=1,
             ffa_weights=None,
             RCAN_weights=None,
-            VIT_weights=None
+            VIT_weights=None,
+            diffusion_weights=None,
+            use_diffusion=False
             ):
         super().__init__()
         self.upsample = upsample
@@ -61,6 +63,10 @@ class KJRDNet_wo_detection(nn.Module):
             self.autoencoder.load_state_dict(torch.load(VIT_weights,weights_only=True))
             self.autoencoder.eval()
             for param in self.autoencoder.parameters():
+                param.requires_grad=False
+        if use_diffusion and diffusion_weights:
+            self.diffusion.load_state_dict(torch.load(diffusion_weights))
+            for param in self.diffusion.parameters():
                 param.requires_grad=False
 
     def forward(self, x):
