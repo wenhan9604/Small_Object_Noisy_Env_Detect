@@ -1,0 +1,1 @@
+cls && python generate_sample_rcan.py --config_file configs/config_rcan.yaml --output_dir ./output_images/

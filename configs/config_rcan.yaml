@@ -13,3 +13,6 @@ network:
 optimizer:
   type: "sgd" # adamw or sgd
   weight_decay: 0.0 #0.001
+
+weights:
+  path: './output_models/rcan_dotah_rcan_2.pth'

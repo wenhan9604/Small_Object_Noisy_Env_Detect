@@ -131,10 +131,17 @@ class Trainer:
         torch.save(model.state_dict(), model_path)
         print(f"Model saved to {model_path}")
 
+
     @staticmethod
     def load_model(model_class, model_path, map_location='cpu'):
         model = model_class()
         model.load_state_dict(torch.load(model_path, map_location=map_location))
+        return model
+    
+    @staticmethod
+    def load_model2(model, weights_path):
+        model.load_state_dict(torch.load(weights_path, weights_only=True))
+        model.eval()
         return model
 
     def train(self):

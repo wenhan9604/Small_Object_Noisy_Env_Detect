@@ -1,9 +1,10 @@
-import time
-# import torch
+import time, torch, os
 import torch.nn as nn
 # import torch.optim as optim
 from models.RCAN import RCAN
 from trainers.trainer_base import Trainer
+from PIL import Image, ImageDraw, ImageFont
+import torchvision.transforms as T
 
 class RCANTrainer(Trainer):
     def __init__(self, config, output_dir=None, device=None):
@@ -49,7 +50,59 @@ class RCANTrainer(Trainer):
                 val_loss = self.validate(epoch)
 
         self.save_model(self.model, f'{self.output_dir}/rcan_{self.dataset.lower()}.pth')
+
+        # Save output samples
+        if hasattr(self, 'test_loader') and self.test_loader is not None:
+            print("Saving output samples...")
+            self.save_output_images(self.model, self.test_loader, device=self.device, save_dir=f"{self.output_dir}", num_samples=2)
+
         print(f"Completed in {(time.time()-start):.3f}.")
+    
+    def generate_sample(self,model_weights_path):
+        model=self.load_model2(self.model,model_weights_path)
+
+        # Save output samples
+        if hasattr(self, 'test_loader') and self.test_loader is not None:
+            print("Saving output samples...")
+            self.save_output_images(model, self.test_loader, device=self.device, save_dir=f"{self.output_dir}", num_samples=2)
+
+    def save_output_images(self, model, dataloader, device, save_dir="output_images", num_samples=2):
+        
+        def label_image(image, label, font_size=20):
+            draw = ImageDraw.Draw(image)
+            font = ImageFont.load_default()
+            draw.text((10, 10), label, font=font, fill=(255, 0, 0))
+            return image
+
+        os.makedirs(save_dir, exist_ok=True)
+        model.eval()
+        to_pil = T.ToPILImage()
+
+        with torch.no_grad():
+            count = 0
+            for hazy, clear in dataloader:
+                hazy = hazy.to(device)
+                output = model(hazy)
+                output = torch.clamp(output, 0, 1)
+
+                for i in range(num_samples):
+                    if count >= num_samples:
+                        break
+                    print(f'Saving image {i}')
+                    hazy_img = label_image(to_pil(hazy[i].cpu()), "Hazy")
+                    superscaled_img = label_image(to_pil(output[i].cpu()), "Superscaled")
+                    gt_img = label_image(to_pil(clear[i].cpu()), "Ground Truth")
+
+                    width, height = hazy_img.size
+                    combined = Image.new("RGB", (width * 3, height))
+                    combined.paste(hazy_img, (0, 0))
+                    combined.paste(superscaled_img, (width, 0))
+                    combined.paste(gt_img, (width * 2, 0))
+
+                    combined.save(os.path.join(save_dir, f"output_comparison_rcan_{i}.png"))
+                    count += 1
+
+        print(f"Saved {i} output samples to '{save_dir}'")
 
     
 
