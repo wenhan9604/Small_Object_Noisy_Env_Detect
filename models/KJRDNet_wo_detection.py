@@ -48,17 +48,17 @@ class KJRDNet_wo_detection(nn.Module):
 
         #load pretrained and freeze the weights
         if ffa_weights:
-            self.ffanet.load_state_dict(torch.load(ffa_weights))
+            self.ffanet.load_state_dict(torch.load(ffa_weights,weights_only=True))
             self.ffanet.eval()
             for param in self.ffanet.parameters():
                 param.requires_grad=False
         if RCAN_weights:
-            self.rcan.load_state_dict(torch.load(RCAN_weights))
+            self.rcan.load_state_dict(torch.load(RCAN_weights,weights_only=True))
             self.rcan.eval()
             for param in self.rcan.parameters():
                 param.requires_grad=False
         if VIT_weights:
-            self.autoencoder.load_state_dict(torch.load(VIT_weights))
+            self.autoencoder.load_state_dict(torch.load(VIT_weights,weights_only=True))
             self.autoencoder.eval()
             for param in self.autoencoder.parameters():
                 param.requires_grad=False
