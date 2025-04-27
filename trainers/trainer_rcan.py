@@ -85,18 +85,23 @@ class RCANTrainer(Trainer):
                 output = model(hazy)
                 output = torch.clamp(output, 0, 1)
 
+                # print("H:",hazy.shape)
+                # print("O:",output.shape)
+                # print("C:",clear.shape)
+
+
                 for i in range(num_samples):
                     if count >= num_samples:
                         break
                     print(f'Saving image {i}')
                     hazy_img = label_image(to_pil(hazy[i].cpu()), "Hazy")
-                    superscaled_img = label_image(to_pil(output[i].cpu()), "Superscaled")
-                    gt_img = label_image(to_pil(clear[i].cpu()), "Ground Truth")
+                    rcaned_img = label_image(to_pil(output[i].cpu()).resize((256,256),Image.LANCZOS), "RCAN output")
+                    gt_img = label_image(to_pil(clear[i].cpu()).resize((256,256),Image.LANCZOS), "Ground Truth")
 
                     width, height = hazy_img.size
                     combined = Image.new("RGB", (width * 3, height))
                     combined.paste(hazy_img, (0, 0))
-                    combined.paste(superscaled_img, (width, 0))
+                    combined.paste(rcaned_img, (width, 0))
                     combined.paste(gt_img, (width * 2, 0))
 
                     combined.save(os.path.join(save_dir, f"output_comparison_rcan_{i}.png"))
