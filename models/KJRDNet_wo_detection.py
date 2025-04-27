@@ -5,30 +5,24 @@ from models.ffa_net import FFANet
 from models.RCAN import RCAN
 from models.image_coordination_block import ImageCoordinationBlock
 from models.upsample import upsample
-from models.faster_rcnn import get_custom_faster_rcnn
-from models.masked_autoencoder import MaskedAutoEncoder
-# TODO: import models
+# TODO: import autoencoder 
 
 
-class KJRDNet(nn.Module):
+class KJRDNet_wo_detection(nn.Module):
     def __init__(
             self,
-            num_classes,
-            upsample,
-            in_channels=32,
-            out_channels=32,
+            # num_classes,
+            in_channels=64,
+            out_channels=64,
             kernel_size=3,
             padding=1,
             ffa_weights=None,
-            RCAN_weights=None
+            RCAN_weights=None,
+            VIT_weights=None
             ):
         super().__init__()
         self.upsample = upsample
-        self.autoencoder = MaskedAutoEncoder(
-            chkpt_dir = './checkpoint/mae_pretrain_vit_large.pth',
-            model_arch = 'mae_vit_large_patch16',
-        )  # TODO: check if its called correctly
-        
+        self.autoencoder = autoencoder()  # TODO: check if its called correctly
         self.ffanet = FFANet(
             in_channels=in_channels,
             out_channels=out_channels,
@@ -43,40 +37,38 @@ class KJRDNet(nn.Module):
             upscale_factor=2
             )
         self.image_coordination_block = ImageCoordinationBlock(
-            vit_token_count=50,
-            vit_dim=1024,
-            spatial_size=512,
-            in_channels=32,
-            hidden_dim=32,
-            out_channels=3,
-            kernel_size=3,
-            padding=1
+            autoencoder=self.autoencoder,
+            rcan=self.rcan,
+            ffanet=self.ffanet,
+            in_channels=in_channels,
+            out_channels=out_channels,
+            kernel_size=kernel_size,
+            padding=padding
         )
-        self.custom_faster_rcnn = get_custom_faster_rcnn(num_classes, icb_channels=out_channels)
 
         #load pretrained and freeze the weights
         if ffa_weights:
-            self.ffanet.load_state_dict(torch.load(ffa_weights))
+            self.ffanet.load_state_dict(torch.load(ffa_weights,weights_only=True))
+            self.ffanet.eval()
             for param in self.ffanet.parameters():
                 param.requires_grad=False
         if RCAN_weights:
-            self.rcan.load_state_dict(torch.load(RCAN_weights))
+            self.rcan.load_state_dict(torch.load(RCAN_weights,weights_only=True))
+            self.rcan.eval()
             for param in self.rcan.parameters():
+                param.requires_grad=False
+        if VIT_weights:
+            self.autoencoder.load_state_dict(torch.load(VIT_weights,weights_only=True))
+            self.autoencoder.eval()
+            for param in self.autoencoder.parameters():
                 param.requires_grad=False
 
     def forward(self, x):
         # Image restoration
         upsample = self.upsample(x)
-        x_rcan = self.rcan(x)
-        x_ffa = self.ffanet(x)
-        x_vit = self.autoencoder(x)
-        output = self.image_coordination_block(
-            x_rcan, 
-            x_ffa, 
-            x_vit
-            )
+        output = self.image_coordination_block(x)
         output += upsample 
         
         # Image detection
-        detection_output = self.custom_faster_rcnn(output)
+        detection_output = output
         return detection_output

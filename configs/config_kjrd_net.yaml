@@ -1,15 +1,18 @@
 data:
-  dataset: # TODO: insert dataset name here
+  dataset: kjrd # TODO: insert dataset name here
 
 train:
-  batch_size: 64
+  batch_size: 4
   lr: 0.0001
-  n_epochs: 5
+  n_epochs: 12
   num_workers: 4 # change this based on number of cores on your CPU. 4 is sufficient for 1 gpu. If unsure leave at 1.
 
 network:
   model: 'kjrd_net'
 
-optimizer:
-  type: "adamw" # adamw or sgd
-  weight_decay: 0.0 #0.001
+# optimizer:
+#   type: "adamw" # adamw or sgd
+#   weight_decay: 0.0 #0.001
+
+loss:
+  lmbda: 2 #do not rename to lambda as it is a reserved keyword

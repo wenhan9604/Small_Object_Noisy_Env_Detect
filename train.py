@@ -4,6 +4,7 @@ import argparse
 import yaml
 from trainers.trainer_ffa_net import FFANetTrainer
 from trainers.trainer_rcan import RCANTrainer
+from trainers.trainer_kjrd_net import KJRDNetTrainer
 from config import Config
 
 
@@ -23,6 +24,8 @@ if __name__ == "__main__":
         net_trainer = FFANetTrainer(config=config, output_dir=args.output_dir)
     elif config.network.model.lower() == 'rcan':
             net_trainer = RCANTrainer(config=config, output_dir=args.output_dir)
+    elif config.network.model.lower() == 'kjrd_net':
+            net_trainer = KJRDNetTrainer(config=config, output_dir=args.output_dir)
 
     else:
         raise ValueError(f"{config.network.model} not supported.") 

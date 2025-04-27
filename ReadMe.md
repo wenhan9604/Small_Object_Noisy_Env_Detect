@@ -10,7 +10,9 @@ Pls install pytroch in local environment following [https://pytorch.org/get-star
 Setup
 - Download masked_autoencoder from https://dl.fbaipublicfiles.com/mae/pretrain/mae_pretrain_vit_large.pth
 - Save .pth file under a new folder (root_dir/checkpoint)
+- Import the masked_autoencoder.py file 
+- Run mae_setup_encoder()
 
 Runtime
 - To encoding image using masked_autoencoder, import the masked_autoencoder.py file 
-- Run retrieve_encoding()
+- Run mae_encode_image()
