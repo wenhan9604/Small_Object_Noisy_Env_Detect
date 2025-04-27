@@ -5,6 +5,7 @@ from models.ffa_net import FFANet
 from models.RCAN import RCAN
 from models.image_coordination_block import ImageCoordinationBlock
 from models.upsample import upsample
+from models.masked_autoencoder import MaskedAutoEncoder
 # TODO: import autoencoder 
 
 
@@ -24,7 +25,10 @@ class KJRDNet_wo_detection(nn.Module):
             ):
         super().__init__()
         self.upsample = upsample
-        self.autoencoder = autoencoder()  # TODO: check if its called correctly
+        self.autoencoder = MaskedAutoEncoder(
+            chkpt_dir = './checkpoint/mae_pretrain_vit_large.pth',
+            model_arch = 'mae_vit_large_patch16',
+        )
         self.ffanet = FFANet(
             in_channels=in_channels,
             out_channels=out_channels,
@@ -65,7 +69,8 @@ class KJRDNet_wo_detection(nn.Module):
             for param in self.autoencoder.parameters():
                 param.requires_grad=False
         if use_diffusion and diffusion_weights:
-            self.diffusion.load_state_dict(torch.load(diffusion_weights))
+            checkpoint = torch.load(diffusion_weights)
+            self.diffusion.load_state_dict(checkpoint['model_state_dict'])
             for param in self.diffusion.parameters():
                 param.requires_grad=False
 

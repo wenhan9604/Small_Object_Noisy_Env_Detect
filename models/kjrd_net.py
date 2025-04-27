@@ -8,7 +8,6 @@ from models.image_coordination_block import ImageCoordinationBlock
 from models.upsample import upsample
 from models.faster_rcnn import get_custom_faster_rcnn
 from models.masked_autoencoder import MaskedAutoEncoder
-# TODO: import models
 
 
 class KJRDNet(nn.Module):
@@ -75,7 +74,8 @@ class KJRDNet(nn.Module):
             for param in self.rcan.parameters():
                 param.requires_grad=False
         if use_diffusion and diffusion_weights:
-            self.diffusion.load_state_dict(torch.load(diffusion_weights))
+            checkpoint = torch.load(diffusion_weights)
+            self.diffusion.load_state_dict(checkpoint['model_state_dict'])
             for param in self.diffusion.parameters():
                 param.requires_grad=False
 
