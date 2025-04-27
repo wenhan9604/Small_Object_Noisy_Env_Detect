@@ -6,9 +6,10 @@ train:
   lr: 0.0001
   n_epochs: 12
   num_workers: 4 # change this based on number of cores on your CPU. 4 is sufficient for 1 gpu. If unsure leave at 1.
+  use_diffusion: False
 
 network:
-  model: 'kjrd_net'
+  model: 'kjrd_net' #  use name 'kjrd_net_diffusion' is use_diffusion paramter is set to True
 
 # optimizer:
 #   type: "adamw" # adamw or sgd

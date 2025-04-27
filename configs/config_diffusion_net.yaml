@@ -1,0 +1,24 @@
+data:
+  dataset: 'dotah_ffa_net'
+
+train:
+  batch_size: 32
+  lr: 0.001
+  n_epochs: 70
+  hidden_dim: 32
+  time_emb_dim: 32
+  kernel_size: 3
+  beta: 0.02
+  timesteps: 200
+  image_loss_weight: 0.8
+  color_loss_weight: 1
+  num_workers: 1 # change this based on number of cores on your CPU. 4 is sufficient for 1 gpu. If unsure leave at 1.
+  resume_from: None # "outputs/diffusion_net/diffusion_net_dotah_ffa_net.pth"
+  resume_epoch: 30
+
+network:
+  model: 'diffusion_net'
+
+optimizer:
+  type: "adamw" # adamw or sgd
+  weight_decay: 0.01 #0.001
