@@ -70,8 +70,10 @@ class RCANTrainer(Trainer):
         
         def label_image(image, label, font_size=20):
             draw = ImageDraw.Draw(image)
-            font = ImageFont.load_default()
-            draw.text((10, 10), label, font=font, fill=(255, 0, 0))
+            font = ImageFont.truetype("arialbd.ttf", 20)
+            bbox = draw.textbbox((0, 0), label, font=font)
+            draw.rectangle(bbox, fill="black")
+            draw.text((0, 0), label, font=font, fill='white')
             return image
 
         os.makedirs(save_dir, exist_ok=True)
@@ -84,11 +86,6 @@ class RCANTrainer(Trainer):
                 hazy = hazy.to(device)
                 output = model(hazy)
                 output = torch.clamp(output, 0, 1)
-
-                # print("H:",hazy.shape)
-                # print("O:",output.shape)
-                # print("C:",clear.shape)
-
 
                 for i in range(num_samples):
                     if count >= num_samples:
