@@ -33,10 +33,11 @@ class KJRDNet(nn.Module):
         )  # TODO: check if its called correctly
         
         self.ffanet = FFANet(
-            in_channels=3,
-            out_channels=out_channels,
-            kernel_size=kernel_size,
-            padding=padding
+            num_groups=4,
+            num_blocks=2,
+            hiddem_dim=32,
+            kernel_size=3
+            remove_global_skip_connection=False
             )
         self.rcan = RCAN(
             num_of_image_channels=3,
@@ -60,7 +61,7 @@ class KJRDNet(nn.Module):
             self.diffusion = DDPMNet(
                 hidden_dim=32,
                 time_emb_dim=32,
-                kernel_size=kernel_size
+                kernel_size=3
                 )
             self.diffusion = Diffusion(timesteps=200)
 

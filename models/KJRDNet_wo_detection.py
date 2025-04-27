@@ -30,10 +30,11 @@ class KJRDNet_wo_detection(nn.Module):
             model_arch = 'mae_vit_large_patch16',
         )
         self.ffanet = FFANet(
-            in_channels=in_channels,
-            out_channels=out_channels,
-            kernel_size=kernel_size,
-            padding=padding
+            num_groups=4,
+            num_blocks=2,
+            hiddem_dim=32,
+            kernel_size=3
+            remove_global_skip_connection=False
             )
         self.rcan = RCAN(
             num_of_image_channels=3,
