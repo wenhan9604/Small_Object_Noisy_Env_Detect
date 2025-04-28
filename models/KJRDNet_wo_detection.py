@@ -26,9 +26,9 @@ class KJRDNet_wo_detection(nn.Module):
         super().__init__()
         self.upsample = upsample
         self.autoencoder = MaskedAutoEncoder(
-            chkpt_dir = './checkpoint/mae_pretrain_vit_large.pth',
+            chkpt_dir = VIT_weights,
             model_arch = 'mae_vit_large_patch16',
-        )
+        )  # TODO: check if its called correctly        
         self.ffanet = FFANet(
             num_groups=4,
             num_blocks=2,
@@ -64,11 +64,11 @@ class KJRDNet_wo_detection(nn.Module):
             self.rcan.eval()
             for param in self.rcan.parameters():
                 param.requires_grad=False
-        if VIT_weights:
-            self.autoencoder.load_state_dict(torch.load(VIT_weights,weights_only=True))
-            self.autoencoder.eval()
-            for param in self.autoencoder.parameters():
-                param.requires_grad=False
+        # if VIT_weights:
+        #     self.autoencoder.load_state_dict(torch.load(VIT_weights,weights_only=True))
+        #     self.autoencoder.eval()
+        #     for param in self.autoencoder.parameters():
+        #         param.requires_grad=False
         if use_diffusion and diffusion_weights:
             checkpoint = torch.load(diffusion_weights)
             self.diffusion.load_state_dict(checkpoint['model_state_dict'])

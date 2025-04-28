@@ -25,7 +25,7 @@ class KJRDNetTrainer(Trainer):
         model = KJRDNet_wo_detection(
             ffa_weights='./output_models/ffa_net_dotah_ffa_net.pth',
             RCAN_weights='./output_models/rcan_dotah_rcan_1.pth',
-            VIT_weights=None,
+            VIT_weights= './output_models/mae_pretrain_vit_large.pth',
             diffusion_weights='./output_models/diffusion_net_dotah_ffa_net.pth',
             use_diffusion=self.use_diffusion
         ).to(self.device)

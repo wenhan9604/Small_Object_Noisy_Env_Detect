@@ -17,6 +17,10 @@ class MaskedAutoEncoder(nn.Module):
         self.imagenet_mean = imagenet_mean
         self.imagenet_std = imagenet_std
 
+        self.model.eval()
+        for param in self.model.parameters():
+            param.requires_grad=False
+
 
     def forward(self, img):
 
