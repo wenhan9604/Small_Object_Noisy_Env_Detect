@@ -2,11 +2,14 @@
 
 import argparse
 import yaml
-from trainers.trainer_ffa_net import FFANetTrainer
-from trainers.trainer_rcan import RCANTrainer
+# from trainers.trainer_ffa_net import FFANetTrainer
+# from trainers.trainer_rcan import RCANTrainer
 from trainers.trainer_kjrd_net import KJRDNetTrainer
 from config import Config
 
+def kjrd_train(config_file, output_dir):
+    net_trainer = KJRDNetTrainer(config=config_file, output_dir=output_dir)
+    net_trainer.train()
 
 if __name__ == "__main__":
 
@@ -20,11 +23,13 @@ if __name__ == "__main__":
         config_dict = yaml.safe_load(file)
         config = Config(config_dict=config_dict)
 
-    if config.network.model.lower() == 'ffa_net':
-        net_trainer = FFANetTrainer(config=config, output_dir=args.output_dir)
-    elif config.network.model.lower() == 'rcan':
-            net_trainer = RCANTrainer(config=config, output_dir=args.output_dir)
-    elif config.network.model.lower() == 'kjrd_net':
+    # if config.network.model.lower() == 'ffa_net':
+    #     net_trainer = FFANetTrainer(config=config, output_dir=args.output_dir)
+    # elif config.network.model.lower() == 'rcan':
+    #         net_trainer = RCANTrainer(config=config, output_dir=args.output_dir)
+    if config.network.model.lower() == 'kjrd_net':
+            net_trainer = KJRDNetTrainer(config=config, output_dir=args.output_dir)
+    elif config.network.model.lower() == 'kjrd_net_diffusion':
             net_trainer = KJRDNetTrainer(config=config, output_dir=args.output_dir)
 
     else:

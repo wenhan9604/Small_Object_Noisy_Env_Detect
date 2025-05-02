@@ -2,9 +2,9 @@ import os, torch
 from torchvision import transforms
 from torch.utils.data import DataLoader
 from utils.data_utils import get_device, set_seed
-from datasets.dotah_ffa_net_dataset import DotahFfanetDataset
-from datasets.dotah_rcan_dataset import DotahRCANDataset
-from datasets.kjrd_dataset import KJRDDataset
+#from datasets.dotah_ffa_net_dataset import DotahFfanetDataset
+#from datasets.dotah_rcan_dataset import DotahRCANDataset
+from data_source.kjrd_dataset import KJRDDataset
 
 class Trainer:
     def __init__(self, config, output_dir=None, device=None):
@@ -31,46 +31,46 @@ class Trainer:
         os.makedirs(self.output_dir, exist_ok=True,)
 
         # Initialize datasets
-        if self.dataset.lower() == 'dotah_ffa_net':
-            transform = transforms.Compose([
-                transforms.Resize((256, 256)),
-                transforms.ToTensor()
-            ])
+        # if self.dataset.lower() == 'dotah_ffa_net':
+        #     transform = transforms.Compose([
+        #         transforms.Resize((256, 256)),
+        #         transforms.ToTensor()
+        #     ])
 
-            def make_split(split):
-                hazy_path = f'./datasets/dotah/{split}/hazy'
-                clear_path = f'./datasets/dotah/{split}/clear'
-                if not (os.path.isdir(hazy_path) and os.path.isdir(clear_path)):
-                    raise FileNotFoundError(f"Missing hazy or clear directory for: {split}")
-                return DotahFfanetDataset(hazy_dir=hazy_path, clear_dir=clear_path, transform=transform)
+        #     def make_split(split):
+        #         hazy_path = f'./datasets/dotah/{split}/hazy'
+        #         clear_path = f'./datasets/dotah/{split}/clear'
+        #         if not (os.path.isdir(hazy_path) and os.path.isdir(clear_path)):
+        #             raise FileNotFoundError(f"Missing hazy or clear directory for: {split}")
+        #         return DotahFfanetDataset(hazy_dir=hazy_path, clear_dir=clear_path, transform=transform)
 
-            self.trainset = make_split('train')
-            self.validationset = make_split('val')
-            self.testset = make_split('test')
-            self.collate_fn=None
-        elif self.dataset.lower() == 'dotah_rcan':
-            base_dimension=256
-            transform_hazy = transforms.Compose([
-                transforms.Resize((base_dimension, base_dimension)),
-                transforms.ToTensor()
-            ])
-            transform_clear = transforms.Compose([
-                transforms.Resize((base_dimension*2,base_dimension*2)),
-                transforms.ToTensor()
-            ])
+        #     self.trainset = make_split('train')
+        #     self.validationset = make_split('val')
+        #     self.testset = make_split('test')
+        #     self.collate_fn=None
+        # elif self.dataset.lower() == 'dotah_rcan':
+        #     base_dimension=256
+        #     transform_hazy = transforms.Compose([
+        #         transforms.Resize((base_dimension, base_dimension)),
+        #         transforms.ToTensor()
+        #     ])
+        #     transform_clear = transforms.Compose([
+        #         transforms.Resize((base_dimension*2,base_dimension*2)),
+        #         transforms.ToTensor()
+        #     ])
 
-            def make_split(split):
-                hazy_path = f'./raw_data/dota_hazed/{split}/images'
-                clear_path = f'./raw_data/dota_orig/{split}/images'
-                if not (os.path.isdir(hazy_path) and os.path.isdir(clear_path)):
-                    raise FileNotFoundError(f"Missing hazy or clear directory for: {split}")
-                return DotahRCANDataset(hazy_dir=hazy_path, clear_dir=clear_path, transform_hazy=transform_hazy,transform_clear=transform_clear)
+        #     def make_split(split):
+        #         hazy_path = f'./raw_data/dota_hazed/{split}/images'
+        #         clear_path = f'./raw_data/dota_orig/{split}/images'
+        #         if not (os.path.isdir(hazy_path) and os.path.isdir(clear_path)):
+        #             raise FileNotFoundError(f"Missing hazy or clear directory for: {split}")
+        #         return DotahRCANDataset(hazy_dir=hazy_path, clear_dir=clear_path, transform_hazy=transform_hazy,transform_clear=transform_clear)
 
-            self.trainset = make_split('train')
-            self.validationset = make_split('val')
-            self.testset = make_split('test')
-            self.collate_fn=None
-        elif self.dataset.lower() == 'kjrd':
+        #     self.trainset = make_split('train')
+        #     self.validationset = make_split('val')
+        #     self.testset = make_split('test')
+        #     self.collate_fn=None
+        if self.dataset.lower() == 'kjrd':
             base_dimension=256
             transform_hazy = None
             transform_clear = transforms.Compose([
@@ -79,9 +79,9 @@ class Trainer:
             ])
 
             def make_split(split):
-                hazy_path = f'./raw_data/dota_hazed/{split}/images'
-                clear_path = f'./raw_data/dota_orig/{split}/images'
-                labels_path = f'./raw_data/dota_orig/{split}/labelsTxt'
+                hazy_path = os.path.join(os.getcwd(), 'raw_data', 'dota_hazed', split, 'images')
+                clear_path = os.path.join(os.getcwd(), 'raw_data', 'dota_orig', split, 'images')
+                labels_path = os.path.join(os.getcwd(), 'raw_data', 'dota_orig', split, 'labelTxt')
                 if not (os.path.isdir(hazy_path) and os.path.isdir(clear_path)):
                     raise FileNotFoundError(f"Missing hazy or clear directory for: {split}")
                 return KJRDDataset(hazy_dir=hazy_path,clear_dir=clear_path,labels_dir=labels_path,transform_clear=transform_clear)
@@ -89,13 +89,20 @@ class Trainer:
             self.trainset = make_split('train')
             self.validationset = make_split('val')
             self.testset = make_split('test')
-            def collate_fn(self,batch):
-                images=[item[0] for item in batch]
-                targets=[item[1] for item in batch]
-                return images, targets
+
+            # print(f"\ntrainset: ")
+            # print(self.trainset.__len__())
+
+            # print(f"\nvalidationset: ")
+            # print(self.validationset.__len__())
+
+            # print(f"\ntestset:")
+            # print(self.testset.__len__())
+
             
         else:
             raise NotImplementedError("Dataset is not supported")
+
         self.train_loader = DataLoader(self.trainset, 
                                        batch_size=self.batch_size, 
                                        shuffle=True,
@@ -116,6 +123,11 @@ class Trainer:
                                       collate_fn=self.collate_fn,
                                       num_workers=self.num_workers,)
                                     #   num_workers=self.num_workers,pin_memory=True, persistent_workers=True) #for lower memory usage
+
+    def collate_fn(self, batch):
+            images=[item[0] for item in batch]
+            targets=[item[1] for item in batch]
+            return images, targets
 
     def _init_optimizer(self, net):
         if self.config.optimizer.type.lower() == 'sgd':
@@ -141,7 +153,9 @@ class Trainer:
         raise NotImplementedError("train function is not implemented")
     
     def validate(self, epoch):
-        self.model.eval()
+        # self.model.eval()
+        self.main_block.eval()
+        self.detector.eval()
         val_loss = 0.0
         with torch.no_grad():
             for inputs, targets in self.val_loader:
@@ -155,7 +169,9 @@ class Trainer:
         return avg_val_loss
     
     def test(self, epoch):
-        self.model.eval()
+        # self.model.eval()
+        self.main_block.eval()
+        self.detector.eval()
         test_loss = 0.0
         with torch.no_grad():
             for inputs, targets in self.test_loader:

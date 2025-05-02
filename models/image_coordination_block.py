@@ -48,6 +48,8 @@ class ImageCoordinationBlock(nn.Module):
             nn.Conv2d(hidden_dim, hidden_dim, kernel_size=kernel_size, padding=padding)
         )
         self.attention = ChannelAttention(in_channels=hidden_dim, out_channels=out_channels)
+        self.project = nn.Conv2d(32, 3, kernel_size=1)
+
     
     def forward(self, x_rcan, x_ffa, x_vit):
         B = x_rcan.shape[0]
@@ -71,6 +73,7 @@ class ImageCoordinationBlock(nn.Module):
         x_fused = torch.cat([x_vit, x_ffa, x_rcan], dim=1)
         output = self.final_layers(x_fused)
         output = self.attention(output)
+        output = self.project(output)
 
         return output
 
@@ -82,7 +85,7 @@ class ChannelAttention(nn.Module):
             nn.AdaptiveAvgPool2d(1),
             nn.Conv2d(in_channels, in_channels // reduction, kernel_size=1),
             nn.ReLU(inplace=True),
-            nn.Conv2d(in_channels // reduction, out_channels, kernel_size=1),
+            nn.Conv2d(in_channels // reduction, in_channels, kernel_size=1),
             nn.Sigmoid()
         )
 
