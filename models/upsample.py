@@ -6,7 +6,10 @@ class upsample(nn.Module):
     def __init__(self,upscale_factor=2):
         super().__init__()
 
+        self.project = nn.Conv2d(3, 4, kernel_size=1)
         self.upscale=nn.PixelShuffle(upscale_factor=upscale_factor)
 
     def forward(self, x):
+        x = self.project(x)
+        
         return self.upscale(x)
